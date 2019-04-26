@@ -1,12 +1,12 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_409_CONFLICT, HTTP_405_METHOD_NOT_ALLOWED)
+from rest_framework.status import HTTP_409_CONFLICT
 from rest_framework.permissions import IsAuthenticated
 from . import serializers as srzs
 from . import models as mdls
 from . import permissions as perms
+from .mixins import DisableListMixin
 
 
 class SchoolViewSet(ModelViewSet):
@@ -38,22 +38,16 @@ class SchoolViewSet(ModelViewSet):
         return Response('구독을 취소 하였습니다.')
 
 
-class ProfileViewSet(ModelViewSet):
+class ProfileViewSet(DisableListMixin, ModelViewSet):
     permission_classes = (perms.IsSelf,)    # 본인만 사용 가능하도록 제한
     # 프로필 조회시 학교 목록을 함께 쿼리 해오도록 prefetch_related 추가
     queryset = mdls.User.objects \
         .prefetch_related('schools') \
         .filter(is_active=True)
     serializer_class = srzs.ProfileSerializer
-    
-    def list(self, request, *args, **kwargs):
-        """
-        프로필 API를 통해 사용자 전체 목록이 조회 되는 것을 방지
-        """
-        return Response(status=HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class ArticleViewSet(ModelViewSet):
+class ArticleViewSet(DisableListMixin, ModelViewSet):
     permission_classes = (perms.IsOwnerOrReadOnly,)
     serializer_class = srzs.ArticleSerializer
     queryset = mdls.Article.objects.all().order_by('-id')   # 최신글 내림차순
