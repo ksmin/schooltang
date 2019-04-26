@@ -20,3 +20,12 @@ class DisableListMixin(object):
 
     def list(self, request, *args, **kwargs):
         return Response(status=HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class SetRequestUserOwnerOnCreateMixin(object):
+    """
+    
+    """
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

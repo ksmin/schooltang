@@ -14,12 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf.urls import url
-from django.contrib import admin
+# from django.contrib import admin
 from django.urls import path, include
+from rest_framework_swagger.views import get_swagger_view
 from NewsFeed.urls import urlpatterns as nf_urlpatterns
 
+schema_view = get_swagger_view(title='School Tang API')
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     url(r'^api/', include((nf_urlpatterns, 'newsfeed'))),
     path('api-auth/', include('rest_framework.urls')),
+    url(r'^$', schema_view),
 ]

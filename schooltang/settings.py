@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = 'rest_framework:login'
+LOGOUT_URL = 'rest_framework:logout'
+
 
 # Application definition
 
@@ -38,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_swagger',
     'NewsFeed.apps.NewsfeedConfig',
 ]
 
@@ -141,7 +145,18 @@ REST_FRAMEWORK = {
 }
 
 if DEBUG:
+    # Debug 시에만 출력되도록 설정
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = \
         REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] + (
             'rest_framework.renderers.BrowsableAPIRenderer',
         )
+
+
+# Swagger UI
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    },
+}
