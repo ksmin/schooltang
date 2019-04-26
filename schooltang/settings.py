@@ -25,7 +25,7 @@ SECRET_KEY = 'pw2__j+^uofw(cegje)0plud3xnzm&u_+r(bzv*-g@!&#ryt9e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -135,4 +135,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
 }
+
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = \
+        REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] + (
+            'rest_framework.renderers.BrowsableAPIRenderer',
+        )
