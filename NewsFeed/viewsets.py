@@ -24,6 +24,16 @@ class SchoolViewSet(ModelViewSet):
         school.save()
         return Response('구독하였습니다.')
 
+    @action(detail=True, methods=['delete'],
+            permission_classes=(IsAuthenticated,))
+    def unsubscribe(self, request, pk=None):
+        school = self.get_object()
+        if not school.subscribers.filter(pk=request.user.pk).exists():
+            return Response('구독 중인 학교가 아닙니다.', status=HTTP_409_CONFLICT)
+        school.subscribers.remove(request.user)
+        school.save()
+        return Response('구독을 취소 하였습니다.')
+
 
 class ProfileViewSet(ModelViewSet):
     permission_classes = (perms.IsSelf,)    # 본인만 사용 가능하도록 제한
