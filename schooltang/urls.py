@@ -23,7 +23,7 @@ schema_view = get_swagger_view(title='School Tang API')
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    url(r'^api/', include((nf_urlpatterns, 'newsfeed'))),
+    url(r'^', include((nf_urlpatterns, 'newsfeed'))),
     path('api-auth/', include('rest_framework.urls')),
     url(r'^$', schema_view),
 ]
