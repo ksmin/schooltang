@@ -21,4 +21,5 @@ from NewsFeed.urls import urlpatterns as nf_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/', include((nf_urlpatterns, 'newsfeed'))),
+    path('api-auth/', include('rest_framework.urls')),
 ]
