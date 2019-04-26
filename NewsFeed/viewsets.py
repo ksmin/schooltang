@@ -12,7 +12,10 @@ from . import permissions as perms
 class SchoolViewSet(ModelViewSet):
     serializer_class = srzs.SchoolSerializer
     permission_classes = (perms.IsOwnerOrReadOnly,)
-    queryset = mdls.School.objects.all().order_by('name')
+    queryset = mdls.School.objects.all().order_by('name')   # 이름 오름차순
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
     
     @action(detail=True, methods=['post'],
             permission_classes=(IsAuthenticated,))
@@ -48,3 +51,12 @@ class ProfileViewSet(ModelViewSet):
         프로필 API를 통해 사용자 전체 목록이 조회 되는 것을 방지
         """
         return Response(status=HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class ArticleViewSet(ModelViewSet):
+    permission_classes = (perms.IsOwnerOrReadOnly,)
+    serializer_class = srzs.ArticleSerializer
+    queryset = mdls.Article.objects.all().order_by('-id')   # 최신글 내림차순
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

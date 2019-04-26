@@ -51,3 +51,16 @@ class Subscribe(mxs.ManagementDateFieldsMixin, models.Model):
     school = models.ForeignKey(School, on_delete=models.CASCADE)
     date_subscribed = models.DateTimeField(auto_now_add=True,
                                            verbose_name='구독일시')
+
+
+class Article(mxs.ManagementDateFieldsMixin, models.Model):
+    """
+    학교 페이지에 등록되는 글
+    """
+    school = models.ForeignKey(School, verbose_name='대상 학교',
+                               related_name='articles',
+                               on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, verbose_name='작성자',
+                              related_name='articles',
+                              on_delete=models.CASCADE)
+    content = models.TextField(verbose_name='글 내용')
