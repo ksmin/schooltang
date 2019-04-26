@@ -3,13 +3,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_409_CONFLICT
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import ListModelMixin
 from . import serializers as srzs
 from . import models as mdls
 from . import permissions as perms
-from .mixins import DisableListMixin, SetRequestUserOwnerOnCreateMixin
+from .mixins import DisableListMixin
 
 
-class SchoolViewSet(SetRequestUserOwnerOnCreateMixin, ModelViewSet):
+class SchoolViewSet(ModelViewSet):
     """
     학교 API
     
@@ -35,6 +37,9 @@ class SchoolViewSet(SetRequestUserOwnerOnCreateMixin, ModelViewSet):
     permission_classes = (perms.IsOwnerOrReadOnly,)
     queryset = mdls.School.objects.all().order_by('name')   # 이름 오름차순
     
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+    
     @action(detail=True, methods=['post'],
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, pk=None):
@@ -43,7 +48,7 @@ class SchoolViewSet(SetRequestUserOwnerOnCreateMixin, ModelViewSet):
         구독 설정
         """
         school = self.get_object()
-        if school.subscribers.filter(pk=request.user.pk).exists():
+        if school.subscribers.filter(id=request.user.id).exists():
             return Response('이미 구독 중 입니다.', status=HTTP_409_CONFLICT)
         school.subscribers.add(request.user)
         school.save()
@@ -57,7 +62,7 @@ class SchoolViewSet(SetRequestUserOwnerOnCreateMixin, ModelViewSet):
         구독 해제
         """
         school = self.get_object()
-        if not school.subscribers.filter(pk=request.user.pk).exists():
+        if not school.subscribers.filter(id=request.user.id).exists():
             return Response('구독 중인 학교가 아닙니다.', status=HTTP_409_CONFLICT)
         school.subscribers.remove(request.user)
         school.save()
@@ -91,7 +96,7 @@ class ProfileViewSet(DisableListMixin, ModelViewSet):
     serializer_class = srzs.ProfileSerializer
 
 
-class ArticleViewSet(DisableListMixin, SetRequestUserOwnerOnCreateMixin, ModelViewSet):
+class ArticleViewSet(DisableListMixin, ModelViewSet):
     """
     글 API
     
@@ -116,3 +121,29 @@ class ArticleViewSet(DisableListMixin, SetRequestUserOwnerOnCreateMixin, ModelVi
     permission_classes = (perms.IsOwnerOrReadOnly,)
     serializer_class = srzs.ArticleSerializer
     queryset = mdls.Article.objects.all().order_by('-id')   # 최신글 내림차순
+
+    def perform_create(self, serializer):
+        article = serializer.save(owner=self.request.user)
+        
+        # 글이 작성된 학교의 구독자들의 피드에 글을 배달
+        subscribers = article.school.subscribers.all()
+        if subscribers.exists():
+            article.receivers.add(*list(subscribers))
+            article.save()
+
+
+class NewsFeedViewSet(ListModelMixin, GenericViewSet):
+    """
+    뉴스피드 API
+    
+    list:
+    로그인한 사용자에게 배달된 피드의 글 목록을 조회
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = srzs.ArticleSerializer
+    queryset = mdls.Article.objects \
+        .prefetch_related('receivers') \
+        .all().order_by('-id')  # 최신피드 내림차순
+    
+    def get_queryset(self):
+        return self.queryset.filter(receivers__id=self.request.user.id)

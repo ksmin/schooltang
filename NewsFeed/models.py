@@ -43,7 +43,7 @@ class School(mxs.ManagementDateFieldsMixin, models.Model):
                                          through_fields=('school', 'user'))
 
 
-class Subscribe(mxs.ManagementDateFieldsMixin, models.Model):
+class Subscribe(models.Model):
     """
     학교와 구독자의 관계를 연결
     """
@@ -64,3 +64,19 @@ class Article(mxs.ManagementDateFieldsMixin, models.Model):
                               related_name='articles',
                               on_delete=models.CASCADE)
     content = models.TextField(verbose_name='글 내용')
+    receivers = models.ManyToManyField(User, verbose_name='수신자들',
+                                       related_name='received_articles',
+                                       through='Feed',
+                                       through_fields=('article', 'receiver'))
+    
+
+class Feed(models.Model):
+    """
+    각 사용자에게 배달된 피드
+    """
+    article = models.ForeignKey(Article, verbose_name='배달된 글',
+                                on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, verbose_name='수신자',
+                                 on_delete=models.CASCADE)
+    date_delivered = models.DateTimeField(auto_now_add=True,
+                                          verbose_name='배달일시')
