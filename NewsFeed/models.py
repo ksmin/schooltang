@@ -25,9 +25,7 @@ REGION_NUMS = (
 
 
 class School(mxs.ManagementDateFieldsMixin, models.Model):
-    """
-    학교 정보
-    """
+    """ 학교 정보 """
     owner = models.ForeignKey(User, verbose_name='관리자',
                               help_text='학교의 뉴스피드를 관리하는 책임자로써 학교를 '
                                         '생성한 사용자',
@@ -44,9 +42,7 @@ class School(mxs.ManagementDateFieldsMixin, models.Model):
 
 
 class Subscribe(models.Model):
-    """
-    학교와 구독자의 관계를 연결
-    """
+    """ 학교와 구독자의 관계를 연결 """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     school = models.ForeignKey(School, on_delete=models.CASCADE)
     date_subscribed = models.DateTimeField(auto_now_add=True,
@@ -54,9 +50,7 @@ class Subscribe(models.Model):
 
 
 class Article(mxs.ManagementDateFieldsMixin, models.Model):
-    """
-    학교 페이지에 등록되는 글
-    """
+    """ 학교 페이지에 등록되는 글 """
     school = models.ForeignKey(School, verbose_name='대상 학교',
                                related_name='articles',
                                on_delete=models.CASCADE)
@@ -71,9 +65,7 @@ class Article(mxs.ManagementDateFieldsMixin, models.Model):
     
 
 class Feed(models.Model):
-    """
-    각 사용자에게 배달된 피드
-    """
+    """ 각 사용자에게 배달된 피드 """
     article = models.ForeignKey(Article, verbose_name='배달된 글',
                                 on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, verbose_name='수신자',
