@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -68,34 +68,27 @@ class SchoolViewSet(ModelViewSet):
         return Response('구독을 취소 하였습니다.')
 
 
-class ProfileViewSet(mixins.RetrieveModelMixin,
-                     mixins.UpdateModelMixin,
-                     mixins.DestroyModelMixin,
-                     GenericViewSet):
+class ProfileViewSet(mixins.UpdateModelMixin, GenericViewSet):
     """
     로그인된 사용자의 프로필 API
     
     list:
     로그인된 사용자 프로필 조회
     
-    create:
-    사용자 프로필 추가
-    
     update:
     로그인된 사용자 프로필 수정
     
     partial_update:
     로그인된 사용자 프로필 부분 수정
-    
-    delete:
-    로그인된 사용자 탈퇴
     """
     permission_classes = (st_permissions.IsSelf,)    # 본인만 사용 가능하도록 제한
-    # 프로필 조회시 학교 목록을 함께 쿼리 해오도록 prefetch_related 추가
-    queryset = st_models.User.objects \
-        .prefetch_related('schools') \
-        .filter(is_active=True)
     serializer_class = st_serializers.ProfileSerializer
+    
+    def get_object(self):
+        return self.request.user
+    
+    def list(self, request):
+        return Response(self.get_serializer(request.user).data)
     
     @action(detail=False, methods=['post'],
             permission_classes=(AllowAny,))
@@ -116,6 +109,14 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
         serialized.validated_data.pop('password')
         return Response(serialized.validated_data,
                         status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['delete'])
+    def withdrawal(self, request):
+        """ 탈퇴: 로그인된 사용자를 로그아웃하고 계정을 삭제 """
+        user_logged_in = request.user
+        logout(request)
+        user_logged_in.delete()
+        return Response('탈퇴 되었습니다.', status=status.HTTP_204_NO_CONTENT)
 
 
 class ArticleViewSet(mixins.CreateModelMixin,

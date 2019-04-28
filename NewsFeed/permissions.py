@@ -19,5 +19,8 @@ class IsSelf(permissions.BasePermission):
     프로파일 API에 적용되는 권한으로 사용자 스스로의 오브젝트에만 접근 할 수 있다.
     """
     
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+        
     def has_object_permission(self, request, view, obj):
-        return obj == request.user
+        return request.user.is_authenticated() and obj == request.user
