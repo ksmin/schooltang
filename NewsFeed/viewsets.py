@@ -2,14 +2,12 @@ from django.contrib.auth import get_user_model
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin
 from . import serializers as st_serializers
 from . import models as st_models
 from . import permissions as st_permissions
-from .mixins import DisableListMixin
 
 
 class SchoolViewSet(ModelViewSet):
@@ -70,7 +68,10 @@ class SchoolViewSet(ModelViewSet):
         return Response('구독을 취소 하였습니다.')
 
 
-class ProfileViewSet(DisableListMixin, ModelViewSet):
+class ProfileViewSet(mixins.RetrieveModelMixin,
+                     mixins.UpdateModelMixin,
+                     mixins.DestroyModelMixin,
+                     GenericViewSet):
     """
     로그인된 사용자의 프로필 API
     
@@ -117,15 +118,16 @@ class ProfileViewSet(DisableListMixin, ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
 
-class ArticleViewSet(DisableListMixin, ModelViewSet):
+class ArticleViewSet(mixins.CreateModelMixin,
+                     mixins.RetrieveModelMixin,
+                     mixins.UpdateModelMixin,
+                     mixins.DestroyModelMixin,
+                     GenericViewSet):
     """
     글 API
     
     retrieve:
     개별 글 조회
-    
-    list:
-    전체 글 목록 조회
     
     create:
     글 생성
@@ -153,7 +155,7 @@ class ArticleViewSet(DisableListMixin, ModelViewSet):
             article.save()
 
 
-class NewsFeedViewSet(ListModelMixin, GenericViewSet):
+class NewsFeedViewSet(mixins.ListModelMixin, GenericViewSet):
     """
     뉴스피드 API
     
