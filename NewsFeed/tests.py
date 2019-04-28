@@ -73,7 +73,7 @@ class UserRegistrationTest(APITestCase):
 class MassUserRegistrationTest(SimpleTestCase):
     """
     다중 사용자 가입 테스트
-    * 본 테스트는 실제 운영환경에 준하는 서버를 대상으로 수행하는 테스트
+     * 실제 운영환경에 준하는 서버를 대상으로 수행하는 테스트
     """
     
     def setUp(self) -> None:
