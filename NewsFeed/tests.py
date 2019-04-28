@@ -1,9 +1,16 @@
 import random
+import asyncio
+import aiohttp
 import timeit
+import uuid
+import logging
 # from django.urls import reverse
+from django.test import SimpleTestCase
 from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory
 from . import models as st_models
+
+logger = logging.getLogger(__name__)
 
 
 class UserRegistrationTest(APITestCase):
@@ -37,15 +44,6 @@ class UserRegistrationTest(APITestCase):
             'password': 'testerDkagh',
             'password_confirm': 'testerDkagh',
         }
-        
-        self.mass_user_data = [{
-            'username': f'tester_{i}',
-            'first_name': str(i),
-            'last_name': 'tester',
-            'email': f'tester_{i}@schooltang.com',
-            'password': f'testerDkagh{i}',
-            'password_confirm': f'testerDkagh{i}',
-        } for i in range(20)]
 
     def test_password_confirmation_not_exist(self):
         """ 사용자 가입 중 확인용 비밀번호 부재 검증 테스트 """
@@ -70,16 +68,64 @@ class UserRegistrationTest(APITestCase):
         response_expected.pop('password')
         response_expected.pop('password_confirm')
         self.assertEqual(response.data, response_expected)
-        # start_time = timeit.default_timer()
-        # for user_data in self.dummy_user_data:
-        #     print('user_data:', user_data.get('username'))
-        #     response = self.client.post(self.url, user_data, format='json')
-        #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # print('count:', st_models.User.objects.count())
-        # time_takes = timeit.default_timer() - start_time
-        # print('time_takes:', time_takes, 'sec.')
-        # self.assertEqual(st_models.User.objects.count(),
-        #                  len(self.dummy_user_data))
+
+
+class MassUserRegistrationTest(SimpleTestCase):
+    """
+    다중 사용자 가입 테스트
+    * 본 테스트는 실제 운영환경에 준하는 서버를 대상으로 수행하는 테스트
+    """
+    
+    def setUp(self) -> None:
+        self.target_host = 'http://127.0.0.1:8000'
+        self.url = f'{self.target_host}/profile/registration/'
+        self.repeat_times = 20000
+        
+        uuid_list = [uuid.uuid4() for _ in range(self.repeat_times)]
+        self.mass_user_data = [{
+            'username': f'tester_{an_uuid}',
+            'first_name': 'tester',
+            'last_name': 'tester',
+            'email': f'tester_{an_uuid}@schooltang.com',
+            'password': f'testerDkagh',
+            'password_confirm': f'testerDkagh',
+        } for an_uuid in uuid_list]
+        
+    @staticmethod
+    async def create_user(url, session, user):
+        try:
+            response = await session.post(url, json=user)
+            return response.status
+        except Exception as err:
+            logger.error(err)
+
+    async def create_all_users(self, users):
+        async with aiohttp.ClientSession() as session:
+            start_time = timeit.default_timer()
+            tasks = []
+            for user in users:
+                task = asyncio.ensure_future(
+                    self.create_user(self.url, session, user))
+                tasks.append(task)
+            await asyncio.gather(*tasks, return_exceptions=True)
+            results = [task.result() for task in tasks]
+            logger.debug('create_all_users takes ', timeit.default_timer() - start_time, 'sec.')
+            return results
+        
+    def test_mass_user_registration(self):
+        """ 다중 사용자 동시 가입 테스트 """
+        start_time = timeit.default_timer()
+        result = asyncio \
+            .get_event_loop() \
+            .run_until_complete(self.create_all_users(self.mass_user_data))
+        errors = [
+            value for value in result if value != status.HTTP_201_CREATED
+        ]
+        self.assertEqual(0, len(errors))
+        logger.debug('test_mass_user_registration takes:', timeit.default_timer() - start_time)
+        
+    def tearDown(self) -> None:
+        pass
 
 
 class SchoolPageTest(APITestCase):
