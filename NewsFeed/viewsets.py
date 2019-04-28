@@ -37,7 +37,9 @@ class SchoolViewSet(ModelViewSet):
     queryset = st_models.School.objects.all().order_by('name')   # 이름 오름차순
     
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        school = serializer.save(owner=self.request.user)
+        school.subscribers.add(self.request.user)
+        school.save()
     
     @action(detail=True, methods=['post'],
             permission_classes=(IsAuthenticated,))
