@@ -1,13 +1,13 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
-from . import viewsets as vsets
+from . import viewsets as st_viewsets
 
 
 router = SimpleRouter()
-router.register(r'schools', vsets.SchoolViewSet)
-router.register(r'profile', vsets.ProfileViewSet)
-router.register(r'articles', vsets.ArticleViewSet)
-router.register(r'newsfeed', vsets.NewsFeedViewSet)
+router.register(r'schools', st_viewsets.SchoolViewSet)
+router.register(r'profile', st_viewsets.ProfileViewSet)
+router.register(r'articles', st_viewsets.ArticleViewSet)
+router.register(r'newsfeed', st_viewsets.NewsFeedViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

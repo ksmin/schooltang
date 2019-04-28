@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from . import mixins as mxs
+from . import mixins as st_mixins
 
 # 지역코드 - 전화번호 중 지역번호
 REGION_NUMS = (
@@ -24,7 +24,7 @@ REGION_NUMS = (
 )
 
 
-class School(mxs.ManagementDateFieldsMixin, models.Model):
+class School(st_mixins.ManagementDateFieldsMixin, models.Model):
     """ 학교 정보 """
     owner = models.ForeignKey(User, verbose_name='관리자',
                               help_text='학교의 뉴스피드를 관리하는 책임자로써 학교를 '
@@ -49,7 +49,7 @@ class Subscribe(models.Model):
                                            verbose_name='구독일시')
 
 
-class Article(mxs.ManagementDateFieldsMixin, models.Model):
+class Article(st_mixins.ManagementDateFieldsMixin, models.Model):
     """ 학교 페이지에 등록되는 글 """
     school = models.ForeignKey(School, verbose_name='대상 학교',
                                related_name='articles',
