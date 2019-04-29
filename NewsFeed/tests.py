@@ -77,7 +77,7 @@ class MassUserRegistrationTest(SimpleTestCase):
     """
     
     def setUp(self) -> None:
-        self.target_host = 'http://127.0.0.1:8000'
+        self.target_host = 'https://saram.dev'
         self.url = f'{self.target_host}/profile/registration/'
         self.repeat_times = 20000
         
