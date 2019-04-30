@@ -28,7 +28,7 @@ schema_view = get_schema_view(
         title="SchoolTang API",
         default_version='v1',
         description="SchoolTang API Service",
-        terms_of_service="https://saram.dev/",
+        terms_of_service="https://saram.dev/swagger/",
         contact=openapi.Contact(email="ksmini82@gmail.com"),
         license=openapi.License(name="BSD License"),
     ),
