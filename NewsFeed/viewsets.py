@@ -85,6 +85,7 @@ class ProfileViewSet(mixins.UpdateModelMixin, GenericViewSet):
     """
     permission_classes = (st_permissions.IsSelf,)    # 본인만 사용 가능하도록 제한
     serializer_class = st_serializers.ProfileSerializer
+    queryset = st_models.User.objects.all().order_by('id')
     
     def get_object(self):
         return self.request.user
